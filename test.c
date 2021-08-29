@@ -16,7 +16,7 @@ static int test_pass = 0;
             fprintf(stderr, "%s:%d: expect: " format " actual: " format "\n", __FILE__, __LINE__, expect, actual); \
             main_ret = 1; \
         } \
-    } while(0)
+    } while (0)
 
 #define EXPECT_EQ_INT(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%d")
 #define EXPECT_EQ_DOUBLE(expect, actual) EXPECT_EQ_BASE((expect) == (actual), expect, actual, "%lf")
@@ -34,7 +34,7 @@ static int test_pass = 0;
         EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v, actual)); \
         EXPECT_EQ_INT(LEPT_NUMBER, lept_get_type(&v)); \
         EXPECT_EQ_DOUBLE(expect, lept_get_number(&v)); \
-    } while(0)
+    } while (0)
 
 #define TEST_ERROR(error, json) \
     do { \
@@ -42,7 +42,7 @@ static int test_pass = 0;
         lept_init(&v); \
         EXPECT_EQ_INT(error, lept_parse(&v, json)); \
         EXPECT_EQ_INT(LEPT_NULL, lept_get_type(&v)); \
-    } while(0)
+    } while (0)
 
 static void test_parse_null() {
     lept_value v;
@@ -200,7 +200,7 @@ static void test_parse_invalid_value() {
         EXPECT_EQ_INT(LEPT_STRING, lept_get_type(&v)); \
         EXPECT_EQ_STRING(expect, lept_get_string(&v), lept_get_string_length(&v)); \
         lept_free(&v); \
-    } while(0)
+    } while (0)
 
 static void test_parse_string() {
     TEST_STRING("", "\"\"");
@@ -343,18 +343,18 @@ static void test_access() {
     test_access_string();
 }
 
-#define TEST_ROUNDTRIP(json)\
-    do {\
-        lept_value v;\
-        char* transformed_json;\
-        size_t length;\
-        lept_init(&v);\
-        EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v, json));\
-        transformed_json = lept_stringify(&v, &length);\
-        EXPECT_EQ_STRING(json, transformed_json, length);\
-        lept_free(&v);\
-        free(transformed_json);\
-    } while(0)
+#define TEST_ROUNDTRIP(json) \
+    do { \
+        lept_value v; \
+        lept_init(&v); \
+        char* transformed_json; \
+        size_t length; \
+        EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v, json)); \
+        transformed_json = lept_stringify(&v, &length); \
+        EXPECT_EQ_STRING(json, transformed_json, length); \
+        lept_free(&v); \
+        free(transformed_json); \
+    } while (0)
 
 static void test_stringify_number() {
     TEST_ROUNDTRIP("0");
@@ -407,10 +407,49 @@ static void test_stringify() {
     test_stringify_object();
 }
 
+#define TEST_EQUAL(json_left, json_right, equality) \
+    do { \
+        lept_value lv, rv; \
+        lept_init(&lv); \
+        lept_init(&rv); \
+        EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&lv, json_left)); \
+        EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&rv, json_right)); \
+        EXPECT_EQ_INT(equality, lept_is_equal(&lv, &rv)); \
+        lept_free(&lv); \
+        lept_free(&rv); \
+    } while (0)
+
+static void test_equal() {
+    TEST_EQUAL("true", "true", 1);
+    TEST_EQUAL("false", "false", 1);
+    TEST_EQUAL("true", "false", 0);
+    TEST_EQUAL("null", "null", 1);
+    TEST_EQUAL("null", "0", 0);
+    TEST_EQUAL("123", "123", 1);
+    TEST_EQUAL("123", "456", 0);
+    TEST_EQUAL("\"abc\"", "\"abc\"", 1);
+    TEST_EQUAL("\"abc\"", "\"abcd\"", 0);
+    TEST_EQUAL("[]", "[]", 1);
+    TEST_EQUAL("[]", "null", 0);
+    TEST_EQUAL("[1,2,3]", "[1,2,3]", 1);
+    TEST_EQUAL("[1,2,3]", "[1,2,3,4]", 0);
+    TEST_EQUAL("[[]]", "[[]]", 1);
+    TEST_EQUAL("{}", "{}", 1);
+    TEST_EQUAL("{}", "null", 0);
+    TEST_EQUAL("{}", "[]", 0);
+    TEST_EQUAL("{\"a\":1,\"b\":2}", "{\"a\":1,\"b\":2}", 1);
+    TEST_EQUAL("{\"a\":1,\"b\":2}", "{\"b\":2,\"a\":1}", 1);
+    TEST_EQUAL("{\"a\":1,\"b\":2}", "{\"a\":1,\"b\":3}", 0);
+    TEST_EQUAL("{\"a\":1,\"b\":2}", "{\"a\":1,\"b\":2,\"c\":3}", 0);
+    TEST_EQUAL("{\"a\":{\"b\":{\"c\":{}}}}", "{\"a\":{\"b\":{\"c\":{}}}}", 1);
+    TEST_EQUAL("{\"a\":{\"b\":{\"c\":{}}}}", "{\"a\":{\"b\":{\"c\":[]}}}", 0);
+}
+
 int main() {
     test_parse();
     test_access();
     test_stringify();
+    test_equal();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;
 }

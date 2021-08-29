@@ -17,6 +17,7 @@ struct lept_value {
         struct {
             lept_value* e;
             size_t size;
+            size_t capacity;
         } a;
         struct {
             char* s;
@@ -54,7 +55,7 @@ enum {
     LEPT_PARSE_MISS_COMMA_OR_SQUARE_BRACKET,
     LEPT_PARSE_MISS_KEY,
     LEPT_PARSE_MISS_COLON,
-    LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET
+    LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET,
 };
 
 int lept_parse(lept_value* v, const char* json);
@@ -85,6 +86,23 @@ lept_value* lept_get_object_value(const lept_value* v, size_t index);
 
 char* lept_stringify(const lept_value* v, size_t* length);
 
-#define lept_init(v) do { (v)->type = LEPT_NULL; } while(0)
+#define lept_init(v) do { (v)->type = LEPT_NULL; } while (0)
+
+size_t lept_find_object_index(const lept_value* v, const char* key, size_t klen);
+lept_value* lept_set_object_value(lept_value* v, const char* key, size_t klen);
+
+lept_value* lept_insert_array_element(lept_value* v, size_t index);
+void lept_erase_array_element(lept_value* v, size_t index, size_t count);
+void lept_clear_array(lept_value* v);
+
+void lept_set_object(lept_value* v, size_t capacity);
+size_t lept_get_object_capacity(const lept_value* v);
+void lept_reserve_object(lept_value* v, size_t capacity);
+void lept_shrink_object(lept_value* v);
+void lept_clear_object(lept_value* v);
+lept_value* lept_set_object_value(lept_value* v, const char* key, size_t klen);
+void lept_remove_object_value(lept_value* v, size_t index);
+
+int lept_is_equal(const lept_value* lhs, const lept_value* rhs);
 
 #endif /* LEPTJSON_H__ */

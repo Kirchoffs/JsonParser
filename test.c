@@ -445,11 +445,29 @@ static void test_equal() {
     TEST_EQUAL("{\"a\":{\"b\":{\"c\":{}}}}", "{\"a\":{\"b\":{\"c\":[]}}}", 0);
 }
 
+#define TEST_COPY(json) \
+    do { \
+        lept_value a, b; \
+        lept_init(&a); \
+        lept_parse(&a, json); \
+        lept_init(&b); \
+        lept_copy(&b, &a); \
+        EXPECT_TRUE(lept_is_equal(&b, &a)); \
+    } while (0)
+
+static void test_copy() {
+    TEST_COPY("true");
+    TEST_COPY("null");
+    TEST_COPY("12.345");
+    TEST_COPY("[true, \"abc\", [1, 2, \"def\"]]");
+}
+
 int main() {
     test_parse();
     test_access();
     test_stringify();
     test_equal();
+    test_copy();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;
 }

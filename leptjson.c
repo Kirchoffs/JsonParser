@@ -651,6 +651,15 @@ lept_value* lept_find_object_value(lept_value* v, const char* key, size_t klen) 
     return index != LEPT_KEY_NOT_EXIST ? &v->u.o.m[index].v : NULL;
 }
 
+void lept_set_object(lept_value* v, size_t capacity) {
+    assert(v != NULL);
+    lept_free(v);
+    v->type = LEPT_OBJECT;
+    v->u.o.size = 0;
+    v->u.o.capacity = capacity;
+    v->u.o.m = capacity > 0 ? (lept_member*) malloc(capacity * sizeof(lept_member)) : NULL;
+}
+
 int lept_is_equal(const lept_value* lhs, const lept_value* rhs) {
     assert(lhs != NULL && rhs != NULL);
     size_t i;
@@ -699,10 +708,21 @@ void lept_copy(lept_value* dst, const lept_value* src) {
             lept_set_string(dst, src->u.s.s, src->u.s.len);
             break;
         case LEPT_ARRAY:
-            /* \todo */
+            lept_set_array(dst, src->u.a.capacity);
+            dst->u.a.size = src->u.a.size;
+            for (i = 0; i < src->u.a.size; i++) {
+                lept_copy(&dst->u.a.e[i], &src->u.a.e[i]);
+            }
             break;
         case LEPT_OBJECT:
-            /* \todo */
+            lept_set_object(dst, src->u.o.capacity);
+            dst->u.o.size = src->u.o.size;
+            for (i = 0; i < src->u.o.size; i++) {
+                dst->u.o.m[i].klen = src->u.o.m[i].klen;
+                dst->u.o.m[i].k = malloc(src->u.o.m[i].klen * sizeof(char));
+                memcpy(dst->u.o.m[i].k, src->u.o.m[i].k, dst->u.o.m[i].klen);
+                lept_copy(&dst->u.o.m[i].v, &src->u.o.m[i].v);
+            }
             break;
         default:
             lept_free(dst);
@@ -728,7 +748,7 @@ void lept_swap(lept_value* lhs, lept_value* rhs) {
     }
 }
 
-void lept_reserve_array(lept_value* v, size_t capacity) {
+void lept_expand_array(lept_value* v, size_t capacity) {
     assert(v != NULL && v->type == LEPT_ARRAY);
     if (v->u.a.capacity < capacity) {
         v->u.a.capacity = capacity;
@@ -747,7 +767,7 @@ void lept_shrink_array(lept_value* v) {
 lept_value* lept_pushback_array_element(lept_value* v) {
     assert(v != NULL && v->type == LEPT_ARRAY);
     if (v->u.a.size == v->u.a.capacity)
-        lept_reserve_array(v, v->u.a.capacity == 0 ? 1 : v->u.a.capacity * 2);
+        lept_expand_array(v, v->u.a.capacity == 0 ? 1 : v->u.a.capacity * 2);
     lept_init(&v->u.a.e[v->u.a.size]);
     return &v->u.a.e[v->u.a.size++];
 }

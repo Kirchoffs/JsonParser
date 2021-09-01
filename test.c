@@ -456,17 +456,21 @@ static void test_equal() {
     } while (0)
 
 static void test_copy() {
-    TEST_COPY("true");
-    TEST_COPY("null");
-    TEST_COPY("12.345");
-    TEST_COPY("[true, \"abc\", [1, 2, \"def\"]]");
+    // TEST_COPY("true");
+    // TEST_COPY("null");
+    // TEST_COPY("12.345");
+    // TEST_COPY("[true]");
+    // TEST_COPY("[false, \"pqr\"]");
+    TEST_COPY("[[1]]");
+    // TEST_COPY("[[1, 2]]");
+    // TEST_COPY("[true, \"abc\", [1, 2]]");
 }
 
 int main() {
-    test_parse();
-    test_access();
-    test_stringify();
-    test_equal();
+    // test_parse();
+    // test_access();
+    // test_stringify();
+    // test_equal();
     test_copy();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;

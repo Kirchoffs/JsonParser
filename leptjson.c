@@ -702,6 +702,7 @@ int lept_is_equal(const lept_value* lhs, const lept_value* rhs) {
 
 void lept_copy(lept_value* dst, const lept_value* src) {
     size_t i;
+    printf("%d, %d\n", src->type, dst->type);
     assert(src != NULL && dst != NULL && src != dst);
     switch (src->type) {
         case LEPT_STRING:

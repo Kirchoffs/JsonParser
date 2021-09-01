@@ -355,7 +355,7 @@ static int lept_parse_object(lept_context* c, lept_value* v) {
         lept_init(&m.v);
 
         // parse key to m.k, m.klen
-        if (*(c -> json) != '"') {
+        if (*(c->json) != '"') {
             ret = LEPT_PARSE_MISS_KEY;
             break;
         }
@@ -375,6 +375,7 @@ static int lept_parse_object(lept_context* c, lept_value* v) {
             break;
         }
         c->json++;
+        lept_parse_whitespace(c);
 
         // parse value
         if ((ret = lept_parse_value(c, &m.v)) != LEPT_PARSE_OK) {
@@ -384,18 +385,16 @@ static int lept_parse_object(lept_context* c, lept_value* v) {
         memcpy(lept_context_push(c, sizeof(lept_member)), &m, sizeof(lept_member));
         size++;
         m.k = NULL;
-
         lept_parse_whitespace(c);
 
         if (*(c->json) == ',') {
             c->json++;
             lept_parse_whitespace(c);
         } else if (*(c->json) == '}') {
-            size_t total_size = sizeof(lept_member) * size;
             c->json++;
-            v->type = LEPT_OBJECT;
+            lept_set_object(v, size);
             v->u.o.size = size;
-            memcpy(v->u.o.m = (lept_member*)malloc(total_size), lept_context_pop(c, total_size), total_size);
+            memcpy(v->u.o.m, lept_context_pop(c, size * sizeof(lept_member)), size * sizeof(lept_member));
             return LEPT_PARSE_OK;
         } else {
             ret = LEPT_PARSE_MISS_COMMA_OR_CURLY_BRACKET;
@@ -702,7 +701,6 @@ int lept_is_equal(const lept_value* lhs, const lept_value* rhs) {
 
 void lept_copy(lept_value* dst, const lept_value* src) {
     size_t i;
-    printf("%d, %d\n", src->type, dst->type);
     assert(src != NULL && dst != NULL && src != dst);
     switch (src->type) {
         case LEPT_STRING:
@@ -712,6 +710,7 @@ void lept_copy(lept_value* dst, const lept_value* src) {
             lept_set_array(dst, src->u.a.capacity);
             dst->u.a.size = src->u.a.size;
             for (i = 0; i < src->u.a.size; i++) {
+                lept_init(&dst->u.a.e[i]);
                 lept_copy(&dst->u.a.e[i], &src->u.a.e[i]);
             }
             break;
@@ -722,6 +721,7 @@ void lept_copy(lept_value* dst, const lept_value* src) {
                 dst->u.o.m[i].klen = src->u.o.m[i].klen;
                 dst->u.o.m[i].k = malloc(src->u.o.m[i].klen * sizeof(char));
                 memcpy(dst->u.o.m[i].k, src->u.o.m[i].k, dst->u.o.m[i].klen);
+                lept_init(&dst->u.o.m[i].v);
                 lept_copy(&dst->u.o.m[i].v, &src->u.o.m[i].v);
             }
             break;

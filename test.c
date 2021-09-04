@@ -517,6 +517,45 @@ static void test_copy() {
     TEST_COPY("[true, \"abc\", [1, 2, \"xyz\"]]");
     TEST_COPY("{\"a\": 1}");
     TEST_COPY("{\"a\": 1, \"arr\": [1, 2, \"xyz\"]}");
+    TEST_COPY("{\"a\": {\"arr\": [null, true, false], \"obj\": {\"val\": 15}}, \"arr\": [1, 2, \"xyz\"]}");
+}
+
+static void test_array_operation() {
+    lept_value original;
+    lept_value modified;
+    lept_value* element;
+    
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&original, "[1, 2, 3, 4, 5, \"abc\"]"));
+    element = lept_pushback_array_element(&original);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "6"));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[1, 2, 3, 4, 5, \"abc\", 6]"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+    
+    element = lept_insert_array_element(&original, 2);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "10"));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[1, 2, 10, 3, 4, 5, \"abc\", 6]"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    lept_popback_array_element(&original);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[1, 2, 10, 3, 4, 5, \"abc\"]"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    lept_erase_array_element(&original, 4, 1);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[1, 2, 10, 3, 5, \"abc\"]"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    lept_erase_array_element(&original, 1, 3);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[1, 5, \"abc\"]"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    element = lept_insert_array_element(&original, 0);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "[\"xyz\", true]"));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[[\"xyz\", true], 1, 5, \"abc\"]"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+}
+
+static void test_operation() {
+    test_array_operation();
 }
 
 int main() {
@@ -525,6 +564,7 @@ int main() {
     test_stringify();
     test_equal();
     test_copy();
+    test_operation();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
     return main_ret;
 }

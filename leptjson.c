@@ -521,7 +521,7 @@ lept_value* lept_get_object_value(const lept_value* v, size_t index) {
 int lept_parse(lept_value* v, const char* json) {
     assert(v != NULL);
     lept_init(v);
-
+    lept_free(v);
     int ret;
 
     lept_context c;
@@ -632,7 +632,7 @@ char* lept_stringify(const lept_value* v, size_t* length) {
     if (length != NULL) {
         *length = c.top;
     }
-    PUTC(&c, '\0');
+    PUTC(&c, '\0'); // put NUL terminal
     return c.stack;
 }
 
@@ -645,7 +645,7 @@ size_t lept_find_object_index(const lept_value* v, const char* key, size_t klen)
     return LEPT_KEY_NOT_EXIST;
 }
 
-lept_value* lept_find_object_value(lept_value* v, const char* key, size_t klen) {
+lept_value* lept_find_object_value(const lept_value* v, const char* key, size_t klen) {
     size_t index = lept_find_object_index(v, key, klen);
     return index != LEPT_KEY_NOT_EXIST ? &v->u.o.m[index].v : NULL;
 }
@@ -780,13 +780,35 @@ void lept_popback_array_element(lept_value* v) {
 }
 
 lept_value* lept_insert_array_element(lept_value* v, size_t index) {
-    return NULL;
+    assert(v != NULL && v->type == LEPT_ARRAY && index <= v->u.a.size);
+    lept_pushback_array_element(v);
+
+    size_t i;
+    for (i = v->u.a.size - 1; i > index; i--) {
+        lept_copy(&v->u.a.e[i], &v->u.a.e[i-1]);
+    }
+    lept_init(&v->u.a.e[index]);
+
+    return &v->u.a.e[index];
 }
 
 void lept_erase_array_element(lept_value* v, size_t index, size_t count) {
-
+    assert(v != NULL && v->type ==LEPT_ARRAY && index < v->u.a.size);
+    size_t i;
+    for (i = index; i + count < v->u.a.size; i++) {
+        lept_copy(&v->u.a.e[i], &v->u.a.e[i+count]);
+    }
+    size_t len = v->u.a.size;
+    for (; i < len; i++) {
+        lept_popback_array_element(v);
+    }
 }
 
 void lept_clear_array(lept_value* v) {
-    
+    assert(v != NULL && v->type ==LEPT_ARRAY);
+    size_t i;
+    for (i = 0; i < v->u.a.size; i++) {
+        lept_free(&v->u.a.e[i]);
+    }
+    v->u.a.size = 0;
 }

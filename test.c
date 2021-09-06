@@ -554,8 +554,27 @@ static void test_array_operation() {
     EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
 }
 
+static void test_object_operation() {
+    lept_value original;
+    lept_value modified;
+    lept_value* element;
+
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&original, "{\"ginkgo\": 0}"));
+
+    element = lept_set_object_value(&original, "ginkgo", 6);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "1"));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"ginkgo\": 1}"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    element = lept_set_object_value(&original, "cycas", 5);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "2"));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"ginkgo\": 1, \"cycas\": 2}"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+}
+
 static void test_operation() {
     test_array_operation();
+    test_object_operation();
 }
 
 int main() {

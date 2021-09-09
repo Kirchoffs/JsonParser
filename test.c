@@ -552,6 +552,10 @@ static void test_array_operation() {
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "[\"xyz\", true]"));
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[[\"xyz\", true], 1, 5, \"abc\"]"));
     EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    lept_clear_array(&original);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[]"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
 }
 
 static void test_object_operation() {
@@ -559,16 +563,34 @@ static void test_object_operation() {
     lept_value modified;
     lept_value* element;
 
-    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&original, "{\"ginkgo\": 0}"));
-
-    element = lept_set_object_value(&original, "ginkgo", 6);
-    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "1"));
-    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"ginkgo\": 1}"));
-    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&original, "{\"cycas\": \"revoluta\"}"));
 
     element = lept_set_object_value(&original, "cycas", 5);
-    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "2"));
-    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"ginkgo\": 1, \"cycas\": 2}"));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "\"thouarsii\""));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"cycas\": \"thouarsii\"}"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    element = lept_set_object_value(&original, "ginkgo", 6);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "\"bilopa\""));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"cycas\": \"thouarsii\", \"ginkgo\": \"bilopa\"}"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    element = lept_set_object_value(&original, "abies", 5);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "\"holophylla\""));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"cycas\": \"thouarsii\", \"ginkgo\": \"bilopa\", \"abies\": \"holophylla\"}"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    lept_remove_object_value(&original, "ginkgo", 6);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"cycas\": \"thouarsii\", \"abies\": \"holophylla\"}"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    element = lept_set_object_value(&original, "abies", 5);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "[\"holophylla\", \"kawakamii\"]"));
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"cycas\": \"thouarsii\", \"abies\": [\"holophylla\", \"kawakamii\"]}"));
+    EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    lept_clear_object(&original);
+    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{}"));
     EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
 }
 

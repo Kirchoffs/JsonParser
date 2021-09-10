@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project (leptjson_test C)
+project (JsonParser C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)

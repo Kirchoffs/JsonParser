@@ -503,6 +503,8 @@ static void test_equal() {
         lept_init(&b); \
         lept_copy(&b, &a); \
         EXPECT_TRUE(lept_is_equal(&b, &a)); \
+        lept_free(&a); \
+        lept_free(&b); \
     } while (0)
 
 static void test_copy() {
@@ -556,6 +558,10 @@ static void test_array_operation() {
     lept_clear_array(&original);
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "[]"));
     EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    lept_free(&original);
+    lept_free(&modified);
+    lept_free(element);
 }
 
 static void test_object_operation() {
@@ -592,6 +598,10 @@ static void test_object_operation() {
     lept_clear_object(&original);
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{}"));
     EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
+
+    lept_free(&original);
+    lept_free(&modified);
+    lept_free(element);
 }
 
 static void test_operation() {

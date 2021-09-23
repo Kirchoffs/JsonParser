@@ -561,7 +561,6 @@ static void test_array_operation() {
 
     lept_free(&original);
     lept_free(&modified);
-    lept_free(element);
 }
 
 static void test_object_operation() {
@@ -572,6 +571,7 @@ static void test_object_operation() {
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&original, "{\"cycas\": \"revoluta\"}"));
 
     element = lept_set_object_value(&original, "cycas", 5);
+    lept_free(element);
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(element, "\"thouarsii\""));
     EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&modified, "{\"cycas\": \"thouarsii\"}"));
     EXPECT_EQ_INT(1, lept_is_equal(&original, &modified));
@@ -601,7 +601,6 @@ static void test_object_operation() {
 
     lept_free(&original);
     lept_free(&modified);
-    lept_free(element);
 }
 
 static void test_operation() {

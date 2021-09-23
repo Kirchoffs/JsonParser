@@ -144,7 +144,7 @@ static void* lept_context_push(lept_context* c, size_t size) {
             c->size = LEPT_PARSE_STACK_INIT_SIZE;
         while (c->top + size >= c->size)
             c->size += c->size >> 1;  /* c->size * 1.5 */
-        c->stack = (char*)realloc(c->stack, c->size);
+        c->stack = (char*) realloc(c->stack, c->size);
     }
     ret = c->stack + c->top;
     c->top += size;
@@ -366,7 +366,7 @@ static int lept_parse_object(lept_context* c, lept_value* v) {
             break;
         }
 
-        memcpy(m.k = (char*)malloc(sizeof(m.klen + 1)), str, m.klen);
+        memcpy(m.k = (char*) malloc(sizeof(m.klen + 1)), str, m.klen);
         m.k[m.klen] = '\0';
 
         // parse colon
